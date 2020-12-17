@@ -1,4 +1,4 @@
-package com.zvuk.zvuk;
+package com.zvuk.stream;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

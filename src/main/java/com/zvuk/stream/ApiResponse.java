@@ -1,4 +1,4 @@
-package com.zvuk.zvuk;
+package com.zvuk.stream;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -82,5 +82,4 @@ public class ApiResponse {
     ) {
         return new ApiResponse(httpStatus.getReasonPhrase(), httpStatus.value(), message, data, errors);
     }
-
 }
