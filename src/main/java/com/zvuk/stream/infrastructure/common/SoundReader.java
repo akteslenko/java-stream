@@ -3,7 +3,6 @@ package com.zvuk.stream.infrastructure.common;
 import net.bramp.ffmpeg.FFprobe;
 import net.bramp.ffmpeg.probe.FFmpegFormat;
 import net.bramp.ffmpeg.probe.FFmpegProbeResult;
-import net.bramp.ffmpeg.probe.FFmpegStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -147,24 +146,15 @@ public class SoundReader {
         try {
             Path path = Paths.get(getFilePath(), file);
 
-            System.out.println(path);
-
             FFprobe ffprobe = new FFprobe("ffprobe");
             FFmpegProbeResult probeResult = ffprobe.probe(path.toString());
-
             FFmpegFormat format = probeResult.getFormat();
-            System.out.format("%nFile: '%s' ; Format: '%s' ; Duration: %.3fs",
-                    format.filename,
-                    format.format_long_name,
-                    format.duration
-            );
 
-            FFmpegStream stream = probeResult.getStreams().get(0);
-            System.out.format("%nCodec: '%s' ; Width: %dpx ; Height: %dpx",
-                    stream.codec_long_name,
-                    stream.width,
-                    stream.height
-            );
+            int duration = (int)format.duration;
+            int minutes = (duration % 3600) / 60;
+            int seconds = (duration % 3600) % 60;
+
+            System.out.printf("duration: %d, minutes: %d, seconds: %d", duration, minutes, seconds);
 
         } catch (IOException ioException) {
             logger.error("Get sound map error ", ioException);
