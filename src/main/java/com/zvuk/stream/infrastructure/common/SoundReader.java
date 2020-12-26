@@ -150,11 +150,12 @@ public class SoundReader {
             FFmpegProbeResult probeResult = ffprobe.probe(path.toString());
             FFmpegFormat format = probeResult.getFormat();
 
-            int duration = (int)format.duration;
+            int duration = (int) format.duration;
             int minutes = (duration % 3600) / 60;
             int seconds = (duration % 3600) % 60;
 
             System.out.printf("duration: %d, minutes: %d, seconds: %d", duration, minutes, seconds);
+
 
         } catch (IOException ioException) {
             logger.error("Get sound map error ", ioException);
