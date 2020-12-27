@@ -1,10 +1,12 @@
 package com.zvuk.stream.infrastructure.common;
 
+import com.zvuk.stream.infrastructure.port.dto.SoundMapDTO;
 import net.bramp.ffmpeg.FFprobe;
 import net.bramp.ffmpeg.probe.FFmpegFormat;
 import net.bramp.ffmpeg.probe.FFmpegProbeResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -16,18 +18,23 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class SoundReader {
     public static final String DIRECTORY = "/files/sounds";
 
-    public static final String CONTENT_TYPE = "Content-Type";
-    public static final String CONTENT_LENGTH = "Content-Length";
-    public static final String VIDEO_CONTENT = "audio/";
-    public static final String CONTENT_RANGE = "Content-Range";
-    public static final String ACCEPT_RANGES = "Accept-Ranges";
-    public static final String BYTES = "bytes";
-    public static final int BYTE_RANGE = 1024;
+    private static final String CONTENT_TYPE = "Content-Type";
+    private static final String CONTENT_LENGTH = "Content-Length";
+    private static final String VIDEO_CONTENT = "audio/";
+    private static final String CONTENT_RANGE = "Content-Range";
+    private static final String ACCEPT_RANGES = "Accept-Ranges";
+    private static final String BYTES = "bytes";
+
+    private static final int BYTE_RANGE = 1024;
+    private static final int STEP_SECONDS = 10;
+
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -142,7 +149,7 @@ public class SoundReader {
         return 0L;
     }
 
-    public void getSoundMap(String file) {
+    public SoundMapDTO getSoundMap(String file) throws IOException {
         try {
             Path path = Paths.get(getFilePath(), file);
 
@@ -150,16 +157,65 @@ public class SoundReader {
             FFmpegProbeResult probeResult = ffprobe.probe(path.toString());
             FFmpegFormat format = probeResult.getFormat();
 
-            int duration = (int) format.duration;
+            int duration = (int)format.duration;
             int minutes = (duration % 3600) / 60;
             int seconds = (duration % 3600) % 60;
+            List<List<Long>> bytesList = bytesPerSeconds(duration, format.size);
 
-            System.out.printf("duration: %d, minutes: %d, seconds: %d", duration, minutes, seconds);
+            SoundMapDTO soundMapDTO = new SoundMapDTO();
+            soundMapDTO.setBytesList(bytesList);
+            soundMapDTO.setDuration(duration);
+            soundMapDTO.setMinutes(minutes);
+            soundMapDTO.setSeconds(seconds);
 
-
+            return soundMapDTO;
         } catch (IOException ioException) {
-            logger.error("Get sound map error ", ioException);
+            logger.error("Error while getting sound map.", ioException);
+            throw ioException;
+        }
+    }
+
+    private List<List<Long>> bytesPerSeconds(int seconds, long bytes) {
+
+        int bytesPerSecond = (int)(bytes / seconds);
+        int partsCount = seconds / STEP_SECONDS;
+
+        // For future additional information (seconds rages)
+//        List<List<Integer>> secondsList = new ArrayList<>();
+//        int firstDelaySecond = 0;
+//        int secondDelaySecond = STEP_SECONDS;
+//        for (int i = 1; i <= partsCount; i++){
+//            if(i == partsCount){
+//                secondDelaySecond += seconds - secondDelaySecond;
+//            }
+//            List<Integer> list = new ArrayList<>();
+//            list.add(firstDelaySecond);
+//            list.add(secondDelaySecond);
+//
+//            secondDelaySecond = secondDelaySecond + STEP_SECONDS;
+//            firstDelaySecond = secondDelaySecond - (STEP_SECONDS - 1);
+//
+//            secondsList.add(list);
+//        }
+
+        long firstDelayBytes = 0;
+        long secondDelayBytes = bytesPerSecond * STEP_SECONDS;
+        long staticDelayBytes = secondDelayBytes;
+        List<List<Long>> bytesList = new ArrayList<>();
+        for (int i = 1; i <= partsCount; i++) {
+            if(i == partsCount){
+                secondDelayBytes += bytes - secondDelayBytes;
+            }
+            List<Long> list = new ArrayList<>();
+            list.add(firstDelayBytes);
+            list.add(secondDelayBytes);
+
+            secondDelayBytes = secondDelayBytes + staticDelayBytes;
+            firstDelayBytes = secondDelayBytes - (staticDelayBytes - 1);
+
+            bytesList.add(list);
         }
 
+        return bytesList;
     }
 }
