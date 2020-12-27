@@ -19,59 +19,46 @@ import java.util.Map;
 @JsonIgnoreProperties(value = {"httpStatus"})
 public class ApiResponse {
 
-    private enum ResponseMessages {
-        SUCCESS("success"),
-        FAIL("fail"),
-        ERROR("error");
+    private String status;
+    private Integer code;
+    private String message;
+    private Map<?, ?> data;
+    private Map<?, ?> errors;
 
-        private final String message;
-
-        ResponseMessages(String message) {
-            this.message = message;
-        }
-    }
-
-    String status;
-    Integer code;
-    String message;
-    Map<?, ?> data;
-    Map<?, ?> errors;
+    private static final String SUCCESS = "success";
+    private static final String FAIL = "fail";
+    private static final String ERROR = "error";
 
     public ApiResponse success(Map<?, ?> data, Map<?, ?> errors) {
         HttpStatus httpStatus = HttpStatus.OK;
-        String message = ResponseMessages.SUCCESS.message;
 
-        return buildResponseObject(httpStatus, message, data, errors);
+        return buildResponseObject(httpStatus, SUCCESS, data, errors);
     }
 
     public ApiResponse success(Map<?, ?> data) {
         HttpStatus httpStatus = HttpStatus.OK;
-        String message = ResponseMessages.SUCCESS.message;
 
-        return buildResponseObject(httpStatus, message, data, null);
+        return buildResponseObject(httpStatus, SUCCESS, data, null);
     }
 
     public ApiResponse success() {
         HttpStatus httpStatus = HttpStatus.OK;
-        String message = ResponseMessages.SUCCESS.message;
 
-        return buildResponseObject(httpStatus, message, null, null);
+        return buildResponseObject(httpStatus, SUCCESS, null, null);
     }
 
     public ApiResponse accepted() {
         HttpStatus httpStatus = HttpStatus.OK;
-        String message = ResponseMessages.SUCCESS.message;
 
         Map<String, Integer> test = new HashMap<>();
 
-        return buildResponseObject(httpStatus, message, test, null);
+        return buildResponseObject(httpStatus, SUCCESS, test, null);
     }
 
     public ApiResponse accepted(Map<?, ?> data) {
         HttpStatus httpStatus = HttpStatus.ACCEPTED;
-        String message = ResponseMessages.SUCCESS.message;
 
-        return buildResponseObject(httpStatus, message, data, null);
+        return buildResponseObject(httpStatus, SUCCESS, data, null);
     }
 
     private ApiResponse buildResponseObject(
