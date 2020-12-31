@@ -62,7 +62,7 @@ public class StreamController {
     )
     public ApiResponse getSoundMap() throws IOException {
         SoundReader soundReader = new SoundReader();
-        SoundMapDTO soundMap = soundReader.getSoundMap("sound.mp3");
+        SoundMapDTO soundMap = soundReader.getSoundMap("the_rasmus-in_the_shadows.mp3");
 
         return ApiResponse.buildResponseObject(HttpStatus.OK, soundMap, null);
     }

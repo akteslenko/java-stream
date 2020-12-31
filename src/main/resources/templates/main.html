@@ -56,7 +56,6 @@
         function appendToBuffer(audioChunk) {
             if (audioChunk) {
                 sourceBuffer.appendBuffer(new Uint8Array(audioChunk));
-                console.log(sourceBuffer);
             }
         }
 
@@ -73,7 +72,7 @@
         }
 
         function GET_CHUNK(step, callback) {
-            var url = 'http://localhost:8080/api/stream/sound/chunk'
+            var url = 'http://localhost:8090/api/stream/sound/chunk'
             let xhr = new XMLHttpRequest();
             xhr.open('GET', url);
             xhr.setRequestHeader('Accept-Ranges', step)
