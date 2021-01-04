@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Good Thymes Virtual Grocery</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+
+<body>
+<p th:text="${title}"/>
+<div>
+    <video controls width="80%" id="myVideo"></video>
+
+    <button onclick="fiveseconds()"> + 5 seconds</button>
+</div>
+<script type="text/javascript">
+    function fiveseconds() {
+        var vid = document.getElementById("myVideo");
+
+        vid.currentTime = vid.currentTime + 5;
+    }
+
+    (function () {
+        let sourceBuffer;
+        let audio = document.querySelector('video');
+        let index = 1;
+        let steps = 13;
+
+        if (!window.MediaSource) {
+            console.error('No Media Source API available');
+            return;
+        }
+
+        let ms = new MediaSource();
+        audio.src = window.URL.createObjectURL(ms);
+        ms.addEventListener('sourceopen', onMediaSourceOpen);
+
+        function onMediaSourceOpen() {
+            sourceBuffer = ms.addSourceBuffer('audio/mpeg');
+            sourceBuffer.addEventListener('updateend', nextSegment);
+
+            // GET_CHUNK(initUrl, appendToBuffer);
+            GET_CHUNK(1, appendToBuffer);
+
+            ms.duration = 136;
+            audio.play();
+        }
+
+        function nextSegment() {
+            index++;
+            GET_CHUNK(index, appendToBuffer);
+            if (index === steps) {
+                sourceBuffer.removeEventListener('updateend', nextSegment);
+            }
+        }
+
+        function appendToBuffer(audioChunk) {
+            if (audioChunk) {
+                sourceBuffer.appendBuffer(new Uint8Array(audioChunk));
+            }
+        }
+
+        function INIT(callback) {
+            var url = 'http://localhost:8080/api/stream/sound/init'
+            let xhr = new XMLHttpRequest();
+            xhr.open('GET', url);
+
+            xhr.onload = function (e) {
+                callback(xhr.response);
+            };
+
+            xhr.send();
+        }
+
+        function GET_CHUNK(step, callback) {
+            var url = 'http://localhost:8090/api/stream/sound/chunk'
+            let xhr = new XMLHttpRequest();
+            xhr.open('GET', url);
+            xhr.setRequestHeader('Accept-Ranges', step)
+            xhr.responseType = 'arraybuffer';
+
+            xhr.onload = function (e) {
+                // setTimeout(function (){
+                    callback(xhr.response);
+                // }, 5000)
+
+            };
+
+            xhr.send();
+        }
+    })();
+</script>
+</body>
+</html>
