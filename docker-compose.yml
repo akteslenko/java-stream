@@ -1,0 +1,15 @@
+version: '3.5'
+
+services:
+  db:
+    image: mysql:5.7
+    container_name: zvuk-java-db
+    volumes:
+      - ./docker/db:/var/lib/mysql
+    ports:
+    - '3310:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: zvuk-db
+      MYSQL_USER: zvuk
+      MYSQL_PASSWORD: zvuk
