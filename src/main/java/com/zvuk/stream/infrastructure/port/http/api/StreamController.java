@@ -67,4 +67,20 @@ public class StreamController {
         return ApiResponse.buildResponseObject(HttpStatus.OK, soundMap, null);
     }
 
+    @RequestMapping(
+            value = "upload",
+            method = RequestMethod.POST
+    )
+    public ApiResponse upload() {
+        return ApiResponse.buildResponseObject(HttpStatus.OK, null, null);
+    }
+
+    @RequestMapping(
+            value = "list",
+            method = RequestMethod.POST
+    )
+    public ApiResponse list() {
+        return ApiResponse.buildResponseObject(HttpStatus.OK, null, null);
+    }
+
 }

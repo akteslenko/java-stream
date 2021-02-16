@@ -157,15 +157,18 @@ public class SoundReader {
             FFmpegFormat format = probeResult.getFormat();
 
             int duration = (int)format.duration;
+            int hours = duration / 3600;
             int minutes = (duration % 3600) / 60;
-            int seconds = (duration % 3600) % 60;
+            int seconds = duration % 60;
             List<List<Long>> bytesList = bytesPerSeconds(duration, format.size);
 
             SoundMapDTO soundMapDTO = new SoundMapDTO();
             soundMapDTO.setBytesList(bytesList);
-            soundMapDTO.setDuration(duration);
             soundMapDTO.setMinutes(minutes);
             soundMapDTO.setSeconds(seconds);
+            soundMapDTO.setDuration(duration);
+            soundMapDTO.setMinutesDuration(String.format("%02d:%02d", minutes, seconds));
+            soundMapDTO.setHoursDuration(String.format("%02d:%02d:%02d", hours, minutes, seconds));
 
             return soundMapDTO;
         } catch (IOException ioException) {
