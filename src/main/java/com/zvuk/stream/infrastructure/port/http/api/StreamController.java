@@ -1,17 +1,16 @@
 package com.zvuk.stream.infrastructure.port.http.api;
 
 import com.zvuk.stream.ApiResponse;
+import com.zvuk.stream.domain.entities.Track;
 import com.zvuk.stream.infrastructure.common.SoundReader;
 import com.zvuk.stream.infrastructure.port.dto.SoundMapDTO;
+import com.zvuk.stream.infrastructure.services.TrackService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -26,6 +25,9 @@ public class StreamController {
 
     @Autowired
     ResourceLoader resourceLoader;
+
+    @Autowired
+    TrackService trackService;
 
     @RequestMapping(
             value = "chunk",
@@ -60,9 +62,16 @@ public class StreamController {
             value = "map",
             method = RequestMethod.GET
     )
-    public ApiResponse getSoundMap() throws IOException {
+    public ApiResponse getSoundMap(@RequestParam int track_id, @RequestParam int user_id) throws IOException {
+
+        System.out.println(track_id);
+        System.out.println(user_id);
+
+        Track track = trackService.getTrackByIdAndUserId(track_id, user_id);
+
+
         SoundReader soundReader = new SoundReader();
-        SoundMapDTO soundMap = soundReader.getSoundMap("the_rasmus-in_the_shadows.mp3");
+        SoundMapDTO soundMap = soundReader.getSoundMap(track);
 
         return ApiResponse.buildResponseObject(HttpStatus.OK, soundMap, null);
     }

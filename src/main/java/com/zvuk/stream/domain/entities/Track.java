@@ -2,10 +2,7 @@ package com.zvuk.stream.domain.entities;
 
 import lombok.Data;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import java.sql.Timestamp;
 
@@ -13,7 +10,7 @@ import static javax.persistence.GenerationType.IDENTITY;
 
 @Data
 @Entity
-@Table(name="track")
+@Table(name="tracks")
 public class Track {
     @Id
     @GeneratedValue(strategy = IDENTITY)
@@ -21,9 +18,10 @@ public class Track {
     private String name;
     private Integer duration;
     private String formattedDuration;
-    private Integer stepSeconds;
-    private String path;
     private String format;
+    private String path;
+    private Integer stepSeconds;
+    private Integer userId;
     private Timestamp createdAt;
     private Timestamp updateAt;
     private Timestamp deletedAt;
