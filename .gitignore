@@ -37,3 +37,4 @@ build/
 
 .env
 docker/db
+files

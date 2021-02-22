@@ -5,14 +5,18 @@ import com.zvuk.stream.domain.entities.Track;
 import com.zvuk.stream.infrastructure.common.SoundReader;
 import com.zvuk.stream.infrastructure.port.dto.SoundMapDTO;
 import com.zvuk.stream.infrastructure.services.TrackService;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -78,9 +82,38 @@ public class StreamController {
 
     @RequestMapping(
             value = "upload",
-            method = RequestMethod.POST
+            method = RequestMethod.POST,
+            consumes = {"multipart/form-data"}
     )
-    public ApiResponse upload() {
+    public ApiResponse upload(@RequestParam("file") MultipartFile file) {
+
+        System.out.println(file.getContentType());
+        System.out.println(file.getName());
+        System.out.println(file.getOriginalFilename());
+        System.out.println(file.getSize());
+
+        String folderPath = "/files/sounds/" + RandomStringUtils.random(8, true, true);
+
+        File theDir = new File("/Users/artem.teslenko/Work/My_Projects/java-stream" + folderPath);
+        System.out.println(theDir.getAbsolutePath());
+        if (!theDir.exists()){
+            boolean mkdirs = theDir.mkdirs();
+            if (mkdirs) {
+                System.out.println("Directory created successfully");
+            } else {
+                System.out.println("Sorry couldn’t create specified directory");
+            }
+        }
+
+        String filePath = theDir.getPath() + "/" + file.getOriginalFilename();
+        File transferFile = new File(filePath);
+
+        try {
+            file.transferTo(transferFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         return ApiResponse.buildResponseObject(HttpStatus.OK, null, null);
     }
 
