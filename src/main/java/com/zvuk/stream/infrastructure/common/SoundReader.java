@@ -1,5 +1,6 @@
 package com.zvuk.stream.infrastructure.common;
 
+import com.zvuk.stream.domain.entities.Track;
 import com.zvuk.stream.infrastructure.port.dto.SoundMapDTO;
 import net.bramp.ffmpeg.FFprobe;
 import net.bramp.ffmpeg.probe.FFmpegFormat;
@@ -95,7 +96,7 @@ public class SoundReader {
      * @throws IOException exception.
      */
     public byte[] readByteRange(String filename, long start, long end) throws IOException {
-        Path path = Paths.get(getFilePath(), filename);
+        Path path = Paths.get(getFilePath(DIRECTORY), filename);
         try (InputStream inputStream = (Files.newInputStream(path));
              ByteArrayOutputStream bufferedOutputStream = new ByteArrayOutputStream()) {
             byte[] data = new byte[BYTE_RANGE];
@@ -115,8 +116,8 @@ public class SoundReader {
      *
      * @return String.
      */
-    private String getFilePath() {
-        URL url = this.getClass().getResource(DIRECTORY);
+    private String getFilePath(String path) {
+        URL url = this.getClass().getResource(path);
         return new File(url.getFile()).getAbsolutePath();
     }
 
@@ -128,7 +129,7 @@ public class SoundReader {
      */
     public Long getFileSize(String fileName) {
         return Optional.ofNullable(fileName)
-                .map(file -> Paths.get(getFilePath(), file))
+                .map(file -> Paths.get(getFilePath(DIRECTORY), file))
                 .map(this::sizeFromFile)
                 .orElse(0L);
     }
@@ -148,24 +149,27 @@ public class SoundReader {
         return 0L;
     }
 
-    public SoundMapDTO getSoundMap(String file) throws IOException {
+    public SoundMapDTO getSoundMap(Track track) throws IOException {
         try {
-            Path path = Paths.get(getFilePath(), file);
+            Path path = Paths.get(getFilePath(track.getPath()), track.getName());
 
             FFprobe ffprobe = new FFprobe("ffprobe");
             FFmpegProbeResult probeResult = ffprobe.probe(path.toString());
             FFmpegFormat format = probeResult.getFormat();
 
             int duration = (int)format.duration;
+            int hours = duration / 3600;
             int minutes = (duration % 3600) / 60;
-            int seconds = (duration % 3600) % 60;
+            int seconds = duration % 60;
             List<List<Long>> bytesList = bytesPerSeconds(duration, format.size);
 
             SoundMapDTO soundMapDTO = new SoundMapDTO();
             soundMapDTO.setBytesList(bytesList);
-            soundMapDTO.setDuration(duration);
             soundMapDTO.setMinutes(minutes);
             soundMapDTO.setSeconds(seconds);
+            soundMapDTO.setDuration(duration);
+            soundMapDTO.setMinutesDuration(String.format("%02d:%02d", minutes, seconds));
+            soundMapDTO.setHoursDuration(String.format("%02d:%02d:%02d", hours, minutes, seconds));
 
             return soundMapDTO;
         } catch (IOException ioException) {

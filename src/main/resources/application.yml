@@ -1,2 +1,10 @@
 server:
   port: 8090
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${DATABASE}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
