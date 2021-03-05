@@ -2,26 +2,28 @@ package com.zvuk.stream.infrastructure.common;
 
 import com.zvuk.stream.domain.entities.Track;
 import com.zvuk.stream.infrastructure.port.dto.SoundMapDTO;
+import lombok.SneakyThrows;
 import net.bramp.ffmpeg.FFprobe;
 import net.bramp.ffmpeg.probe.FFmpegFormat;
 import net.bramp.ffmpeg.probe.FFmpegProbeResult;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
+import static com.google.common.collect.TreeTraverser.using;
+
+@Component
 public class SoundReader {
     public static final String DIRECTORY = "/files/sounds";
 
@@ -151,13 +153,13 @@ public class SoundReader {
 
     public SoundMapDTO getSoundMap(Track track) throws IOException {
         try {
-            Path path = Paths.get(getFilePath(track.getPath()), track.getName());
+            Path path = Paths.get(track.getPath(), track.getName());
 
             FFprobe ffprobe = new FFprobe("ffprobe");
             FFmpegProbeResult probeResult = ffprobe.probe(path.toString());
             FFmpegFormat format = probeResult.getFormat();
 
-            int duration = (int)format.duration;
+            int duration = (int) format.duration;
             int hours = duration / 3600;
             int minutes = (duration % 3600) / 60;
             int seconds = duration % 60;
@@ -168,6 +170,9 @@ public class SoundReader {
             soundMapDTO.setMinutes(minutes);
             soundMapDTO.setSeconds(seconds);
             soundMapDTO.setDuration(duration);
+            soundMapDTO.setFormat(format.format_name);
+            soundMapDTO.setFormatLong(format.format_long_name);
+            soundMapDTO.setTags(format.tags);
             soundMapDTO.setMinutesDuration(String.format("%02d:%02d", minutes, seconds));
             soundMapDTO.setHoursDuration(String.format("%02d:%02d:%02d", hours, minutes, seconds));
 
@@ -180,7 +185,7 @@ public class SoundReader {
 
     private List<List<Long>> bytesPerSeconds(int seconds, long bytes) {
 
-        int bytesPerSecond = (int)(bytes / seconds);
+        int bytesPerSecond = (int) (bytes / seconds);
         int partsCount = seconds / STEP_SECONDS;
 
         // For future additional information (seconds rages)
@@ -206,7 +211,7 @@ public class SoundReader {
         long staticDelayBytes = secondDelayBytes;
         List<List<Long>> bytesList = new ArrayList<>();
         for (int i = 1; i <= partsCount; i++) {
-            if(i == partsCount){
+            if (i == partsCount) {
                 secondDelayBytes += bytes - secondDelayBytes;
             }
             List<Long> list = new ArrayList<>();
@@ -220,5 +225,43 @@ public class SoundReader {
         }
 
         return bytesList;
+    }
+
+    public String saveFile(MultipartFile file) {
+        String folderPath = "/files/sounds/" + RandomStringUtils.random(8, true, true);
+        String absolutePath = new File("").getAbsolutePath();
+
+        File theDir = new File(absolutePath + folderPath);
+        if (!theDir.exists()) {
+            boolean mkdirs = theDir.mkdirs();
+            if (mkdirs) {
+                logger.info("Directory created successfully.");
+                System.out.println("");
+            } else {
+                logger.error("Sorry couldn’t create specified directory.");
+            }
+        }
+
+        String filePath = theDir.getPath() + "/" + file.getOriginalFilename();
+        Path path = Paths.get(filePath);
+
+        try {
+            Path write = Files.write(path, file.getBytes());
+            File currentFile = new File(write.toAbsolutePath().toString());
+            boolean exists = false;
+            while (!exists){
+                if(currentFile.exists()){
+                    exists = true;
+                    logger.info("The file is saved.");
+                } else {
+                    logger.info("The file is not save yet.");
+                }
+
+            }
+            return write.getParent().toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 }

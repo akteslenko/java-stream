@@ -14,9 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,16 +64,8 @@ public class StreamController {
             value = "map",
             method = RequestMethod.GET
     )
-    public ApiResponse getSoundMap(@RequestParam int track_id, @RequestParam int user_id) throws IOException {
-
-        System.out.println(track_id);
-        System.out.println(user_id);
-
-        Track track = trackService.getTrackByIdAndUserId(track_id, user_id);
-
-
-        SoundReader soundReader = new SoundReader();
-        SoundMapDTO soundMap = soundReader.getSoundMap(track);
+    public ApiResponse getSoundMap(@RequestParam("track_id") int trackId, @RequestParam("user_id") int userId) {
+        SoundMapDTO soundMap = trackService.getTrackMapInfo(trackId, userId);
 
         return ApiResponse.buildResponseObject(HttpStatus.OK, soundMap, null);
     }
@@ -85,34 +75,8 @@ public class StreamController {
             method = RequestMethod.POST,
             consumes = {"multipart/form-data"}
     )
-    public ApiResponse upload(@RequestParam("file") MultipartFile file) {
-
-        System.out.println(file.getContentType());
-        System.out.println(file.getName());
-        System.out.println(file.getOriginalFilename());
-        System.out.println(file.getSize());
-
-        String folderPath = "/files/sounds/" + RandomStringUtils.random(8, true, true);
-
-        File theDir = new File("/Users/artem.teslenko/Work/My_Projects/java-stream" + folderPath);
-        System.out.println(theDir.getAbsolutePath());
-        if (!theDir.exists()){
-            boolean mkdirs = theDir.mkdirs();
-            if (mkdirs) {
-                System.out.println("Directory created successfully");
-            } else {
-                System.out.println("Sorry couldn’t create specified directory");
-            }
-        }
-
-        String filePath = theDir.getPath() + "/" + file.getOriginalFilename();
-        File transferFile = new File(filePath);
-
-        try {
-            file.transferTo(transferFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public ApiResponse upload(@RequestParam("file") MultipartFile file, @RequestParam("userId") int userId) {
+        trackService.saveTrackInfo(file, userId);
 
         return ApiResponse.buildResponseObject(HttpStatus.OK, null, null);
     }
