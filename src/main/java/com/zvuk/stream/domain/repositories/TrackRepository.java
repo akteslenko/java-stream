@@ -16,4 +16,6 @@ public interface TrackRepository extends JpaRepository<Track, Long> {
 
     @Query(value = "SELECT * FROM tracks", nativeQuery = true)
     List<Track> all();
+
+    List<Track> findAllByUserId(int userId);
 }

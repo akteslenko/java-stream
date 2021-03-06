@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -83,10 +84,12 @@ public class StreamController {
 
     @RequestMapping(
             value = "list",
-            method = RequestMethod.POST
+            method = RequestMethod.GET
     )
-    public ApiResponse list() {
-        return ApiResponse.buildResponseObject(HttpStatus.OK, null, null);
+    public ApiResponse list(@RequestParam("user_id") int userId) {
+        List<SoundMapDTO> trackList = trackService.getTracksList(userId);
+
+        return ApiResponse.buildResponseObject(HttpStatus.OK, trackList, null);
     }
 
 }
